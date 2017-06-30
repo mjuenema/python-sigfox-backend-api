@@ -4,6 +4,9 @@ python-sigfox  API
 .. note:: Currently only the features that are accessible as *LIMITED_ADMIN* are
           implemented.
 
+This page describes the API of the **python-sigfox** package. All code
+examples have been copied from the official documentation.
+
 Importing the module
 --------------------
 
@@ -15,7 +18,6 @@ The Sigfox class
 ----------------
 
 .. autoclass:: sigfoxapi.Sigfox
-
 .. code-block:: python
 
    >>> s = Sigfox('1234567890abcdef', 'fedcba09876543221')
