@@ -9,7 +9,7 @@
    :maxdepth: 2
    :caption: Contents:
 
-   license
+.. automodule:: sigfoxapi
 
 Indices and tables
 ==================
