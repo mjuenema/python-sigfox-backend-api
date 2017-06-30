@@ -9,7 +9,7 @@
    :maxdepth: 2
    :caption: Contents:
 
-.. automodule:: sigfoxapi
+   api
 
 Indices and tables
 ==================
