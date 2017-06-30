@@ -21,7 +21,6 @@ For more details about the Sigfox backend REST API navigate to the *Group*
 page in the Sigfox backend web interface, select a group, click on *REST-API*
 and then on the *API documentation* link. The documentation is generated
 automatically and tailored to the access permission of the logged-in user.
-The API  documentation is not publicly available.
 
 Example
 -------
