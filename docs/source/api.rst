@@ -38,7 +38,6 @@ Device types
 .. automethod:: sigfoxapi.Sigfox.devicetype_list
 .. automethod:: sigfoxapi.Sigfox.devicetype_errors
 .. automethod:: sigfoxapi.Sigfox.devicetype_warnings
-.. automethod:: sigfoxapi.Sigfox.devicetype_gelocsconfig
 .. automethod:: sigfoxapi.Sigfox.devicetype_messages
 .. automethod:: sigfoxapi.Sigfox.devicetype_disengage
 
