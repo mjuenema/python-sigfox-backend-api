@@ -18,9 +18,6 @@ The Sigfox class
 ----------------
 
 .. autoclass:: sigfoxapi.Sigfox
-.. code-block:: python
-
-   >>> s = Sigfox('1234567890abcdef', 'fedcba09876543221')
 
 Users
 -----
