@@ -44,4 +44,4 @@ only a single device is returned.
 Documentation
 -------------
 
-The full documentation is at http://sigfoxapi.readthedocs.io.
+The full documentation can be found at http://python-sigfoxapi.readthedocs.io.
