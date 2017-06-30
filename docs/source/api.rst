@@ -23,43 +23,27 @@ The Sigfox class
 Users
 -----
 
+User list by group
+~~~~~~~~~~~~~~~~~~
+
 .. automethod:: sigfoxapi.Sigfox.user_list
-
-.. code-block:: python
-
-   # List all users.
-   >>> s.user_list(groupid)
-   # TODO
 
 Groups
 ------
 
 .. automethod:: sigfoxapi.Sigfox.group_info
-
-.. code-block:: python
-
-   >>> s.group_info(groupid)
-   {'billable': True,
-    'description': 'Some Group',
-    'id': '5947bc1150057463d724131a',
-    'name': 'Some Group',
-    'nameCI': 'some group',
-    'path': ['588b8b9e5005743eec66391f',
-             '588b8b9e5005743eec663909',
-             '5491afbe9336a3d6154fee03',
-             'deadbeeffacecafebabecafe',
-             'babecafebabecafebabecafe']}
-
 .. automethod:: sigfoxapi.Sigfox.group_list
-
-.. code-block:: python
-
-   >>> s.group_list()
-   []
 
 Device types
 ------------
 
+.. automethod:: sigfoxapi.Sigfox.devicetype_edit
+.. automethod:: sigfoxapi.Sigfox.devicetype_list
+.. automethod:: sigfoxapi.Sigfox.devicetype_errors
+.. automethod:: sigfoxapi.Sigfox.devicetype_warnings
+.. automethod:: sigfoxapi.Sigfox.devicetype_gelocsconfig
+.. automethod:: sigfoxapi.Sigfox.devicetype_messages
+.. automethod:: sigfoxapi.Sigfox.devicetype_disengage
 
 Devices
 -------
