@@ -130,37 +130,37 @@ device_consumptions
 Callbacks
 ---------
 
-classback_new
+callback_new
 ~~~~~~~~~~~~~
 
 .. automethod:: sigfoxapi.Sigfox.callback_new
 
-classback_list
+callback_list
 ~~~~~~~~~~~~~~
 
 .. automethod:: sigfoxapi.Sigfox.callback_list
 
-classback_delete
+callback_delete
 ~~~~~~~~~~~~~~~~
 
 .. automethod:: sigfoxapi.Sigfox.callback_delete
 
-classback_enable
+callback_enable
 ~~~~~~~~~~~~~~~~
 
 .. automethod:: sigfoxapi.Sigfox.callback_enable
 
-classback_disable
+callback_disable
 ~~~~~~~~~~~~~~~~~
 
 .. automethod:: sigfoxapi.Sigfox.callback_disable
 
-classback_downlink
+callback_downlink
 ~~~~~~~~~~~~~~~~~~
 
 .. automethod:: sigfoxapi.Sigfox.callback_downlink
 
-classback_errors
+callback_errors
 ~~~~~~~~~~~~~~~~
 
 .. automethod:: sigfoxapi.Sigfox.callback_errors
