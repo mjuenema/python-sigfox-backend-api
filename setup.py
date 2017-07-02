@@ -11,14 +11,14 @@ from os.path import join, dirname
 
 from sigfoxapi import __name__, __version__, __license__
 
-readme = open(join(dirname(__file__), 'README.md')).read()
+readme = open(join(dirname(__file__), 'README.rst')).read()
 
 requirements = [
-  r.strip() for r in open(join(dirname(__file__), 'requirements.txt').readlines().split('\n')
+  r.strip() for r in open(join(dirname(__file__), 'requirements.txt')).readlines()
 ]
 
 test_requirements = [
-  r.strip() for r in open(join(dirname(__file__), 'test_requirements.txt').readlines().split('\n')
+  r.strip() for r in open(join(dirname(__file__), 'test_requirements.txt')).readlines()
 ]
 
 setup(
