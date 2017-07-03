@@ -98,7 +98,7 @@ class Sigfox(object):
 
         """
 
-        return self.request('GET', '/groups/'+groupid)
+        return self.request('GET', '/groups/' + groupid)
 
 
     def group_list(self):
@@ -556,26 +556,167 @@ class Sigfox(object):
 
         return self.request('GET', '/devices/%s/locations' % (deviceid), params=params)
 
-    def device_errors(self, deviceid, **params):
-        return self.request('GET', '/devices/%s/status/error' % (deviceid), params=params)
+    def device_errors(self, deviceid, **kwargs):
+        """Get the communication down events for a device.
 
-    def device_warnings(self, deviceid, **params):
-        return self.request('GET', '/devices/%s/status/warn' % (deviceid), params=params)
+           :param deviceid: The device identifier.
+           :param \**kwargs: Optional keyword arguments as described in the official
+               documentation (`before`, `since`, `limit`, `offset`).
+
+           >>> s.device_errors('4830')
+           [
+               {
+                   "deviceId" : "4830",
+                   "time" : 1381300600026,
+                   "message" : "No message received since 2013-10-08 15:36:21",
+                   "severity" : "ERROR",
+                   "deviceTypeId" : "5256c4d6c9a871b80f5a2e50",
+                   "callbacks" : [
+                       {
+                           "url" : "http://host/path?id=4830&time=1381300600",
+                           "status" : 200
+                       },
+                       {
+                           "subject" : "some subject",
+                           "message" : "some messages",
+                           "status" : 200
+                       }
+                   ]
+               },
+               { ... }
+           ]
+
+
+        """
+
+        return self.request('GET', '/devices/%s/status/error' % (deviceid), params=kwargs)
+
+    def device_warnings(self, deviceid, **kwargs):
+        """Get the network issues events that were sent for a device
+
+           :param deviceid: The device identifier.
+           :param \**kwargs: Optional keyword arguments as described in the official
+               documentation (`before`, `since`, `limit`, `offset`).
+
+           >>> s.device_warnings('4830')
+           [
+               {
+                   "deviceIds" : [ "0235", "023A", "4830" ],
+                   "time" : 1381410600026,
+                   "message" : "Sigfox network experiencing issues [SIC]",
+                   "severity" : "WARN",
+                   "deviceTypeId" : "5256c4d6c9a871b80f5a2e50",
+                   "callbacks" : [
+                       {
+                           "url" : "http://host/path?id=4830&time=1381410600",
+                           "status" : 600,
+                           "info" : "Connection refused: host/path"
+                       },
+                       {
+                           "subject" : "some subject",
+                           "message" : "some messages",
+                           "status" : 200
+                       }
+                   ]
+               },
+               { ... }
+           ]
+
+        """
+
+        return self.request('GET', '/devices/%s/status/warn' % (deviceid), params=kwargs)
 
     def device_networkstate(self, deviceid):
+        """Return the network status for a specific device.
+
+           :param deviceid: The device identifier.
+
+           >>> s.device_networkstate('4830')
+           {
+               "networkStatus" : "NOK"
+           }
+
+        """
+
         return self.request('GET', '/devices/%s/networkstate' % (deviceid))
 
     def device_messagemetrics(self, deviceid):
+        """Returns the total number of device messages for one device, this day, this week and this month.
+
+           :param deviceid: The device identifier.
+
+           >>> s.device_messagemetrics('4830')
+           {
+               "lastDay": 47,
+               "lastWeek": 276,
+               "lastMonth": 784
+           }
+
+        """
+
         return self.request('GET', '/devices/%s/messages/metric' % (deviceid))
 
     def device_consumptions(self, deviceid, year):
+        """Get a Device's consumptions for a year.
+
+           :param deviceid: The device identifier.
+           :param year: The year, e.g. ``2017``.
+
+           >>> s.device_consumptions('4830', 2017)
+           {
+               "consumption": {
+                   "id" : "4830_2017",
+                   "consumptions": [
+                       {
+                           "frameCount": 12,
+                           "downlinkFrameCount": 3
+                       },
+                       { ... }
+                   ]
+               }
+           }
+
+           Each entry in ```consumption``` is the data for one day, starting with the
+           1st of January.
+
+        """
+
         return self.request('GET', '/devices/%s/consumptions/%s' % (deviceid, year))
 
     def coverage_redundancy(self, lat, lng, mode='INDOOR'):
+        """Get base station redundancy for a given latitude and longitude.
+
+           :param lat: The decimal latitude.
+           :param lng: The decimal longitude.
+           :param mode: Can be either ```INDOOR``` or ```OUTDOOR```.
+
+
+           >>> s.coverage_redundancy(43.415, 1.9693, mode='OUTDOOR')
+           {
+               "redundancy":3
+           }
+
+        """
+
         params = {'lat': lat, 'lng': lng, 'mode': mode}
         return self.request('GET', '/coverages/redundancy', params=params)
 
-    def coverage_predictions(self, lat, lng):
+    def coverage_predictions(self, lat, lng, mode='INDOOR'):
+        """Get coverage levels for a given latitude and longitude.
+
+           :param lat: The decimal latitude.
+           :param lng: The decimal longitude.
+           :param mode: Can be either ```INDOOR```, ```OUTDOOR``` or ```UNDERGROUND```.
+
+           The return value contains the margins values (dB) for redundancy level 1, 2 and 3.
+
+           >>> s.coverage_preedictions(43.415, 1.9693)
+           {
+               'margins': [48, 20, 7]
+           }
+
+        """
+
         params = {'lat': lat, 'lng': lng}
         return self.request('GET', '/coverages/global/predictions', params=params)
 
