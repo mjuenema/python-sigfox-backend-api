@@ -7,6 +7,7 @@ Inspired by https://pypi.python.org/pypi/pySigfox.
 
 """
 
+import copy
 import drest
 import drest.serialization
 
@@ -22,7 +23,60 @@ IGNORE_SSL_VALIDATION = False
 DEBUG = False
 """Set to ``True`` to enable debugging."""
 
+RETURN_OBJECTS = False
+"""Change to ``True`` to return objects instead of dictionaries. Returning
+   objects allows to access fields in the ``object.field`` syntax instead
+   of ``dict['field']`` which some people may prefer.
+
+   >>> sigfoxapi.RETURN_OJECTS = False
+   >>> group = s.group_info('489b848ee4b0ca4786945614')
+   >>> group['name']
+   Group 1
+   >>> sigfoxapi.RETURN_OJECTS = True
+   >>> group = s.group_info('489b848ee4b0ca4786945614')
+   >>> group.name
+   Group 1
+"""
+
+
 # TODO: handle paged responses
+
+
+class _object(object):
+    """Convert a dictionary to an object.
+
+       `_object` is used internally to implement the
+       ``sigfoxapi.RETURN_OBJECTS=True`` functionality.
+
+       All attributes are read-only.
+
+       This class works in the context of this module
+       but may fail elsewhere.
+
+    """
+
+    def __init__(self, data):
+        self.data = data
+
+    def __getattr__(self, name):
+        try:
+            if isinstance(self.data[name], dict):
+                return _object(self.data[name])
+            elif isinstance(self.data[name], list):
+                return _object(self.data[name])
+            else:
+                return self.data[name]
+        except KeyError:
+            raise AttributeError(name)
+
+    def __getitem__(self,  key):
+        value = self.data[key]
+        if isinstance(value, dict):
+            return _object(value)
+        elif isinstance(value, list):
+            return _object(value)
+        else:
+            return value
 
 
 class Sigfox(object):
@@ -65,9 +119,14 @@ class Sigfox(object):
         resp = self.api.make_request(method, path, params=params, headers=headers)
 
         try:
-            return resp.data['data']
+            data = resp.data['data']
         except (KeyError, TypeError):
-            return resp.data
+            data = resp.data
+
+        if RETURN_OBJECTS and isinstance(data, dict):
+            return _object(data)
+        else:
+            return data
 
 
     def group_info(self, groupid):
