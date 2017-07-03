@@ -17,10 +17,10 @@ __license__ = 'BSD 2-clause "Simplified" License'
 SIGFOX_API_URL = 'https://backend.sigfox.com/api/'
 
 IGNORE_SSL_VALIDATION = False
-"""Set to ```True``` to ignore SSL validation problems."""
+"""Set to ``True`` to ignore SSL validation problems."""
 
 DEBUG = False
-"""Set to ```True``` to enable debugging."""
+"""Set to ``True`` to enable debugging."""
 
 # TODO: handle paged responses
 
@@ -149,7 +149,7 @@ class Sigfox(object):
     def devicetype_list(self):
         """Lists all device types available to your group.
 
-           ..note:: ```includeSubGroups``` and ```contractInfoId``` are currently not supported.
+           ..note:: ``includeSubGroups`` and ``contractInfoId`` are currently not supported.
 
            >>> s.devicetype_list()
            [
@@ -671,7 +671,7 @@ class Sigfox(object):
                }
            }
 
-           Each entry in ```consumption``` is the data for one day, starting with the
+           Each entry in ``consumption`` is the data for one day, starting with the
            1st of January.
 
         """
@@ -683,7 +683,7 @@ class Sigfox(object):
 
            :param lat: The decimal latitude.
            :param lng: The decimal longitude.
-           :param mode: Can be either ```INDOOR``` or ```OUTDOOR```.
+           :param mode: Can be either ``INDOOR`` or ``OUTDOOR``.
 
 
            >>> s.coverage_redundancy(43.415, 1.9693, mode='OUTDOOR')
@@ -701,7 +701,7 @@ class Sigfox(object):
 
            :param lat: The decimal latitude.
            :param lng: The decimal longitude.
-           :param mode: Can be either ```INDOOR```, ```OUTDOOR``` or ```UNDERGROUND```.
+           :param mode: Can be either ``INDOOR``, ``OUTDOOR`` or ``UNDERGROUND``.
 
            The return value contains the margins values (dB) for redundancy level 1, 2 and 3.
 
