@@ -474,6 +474,7 @@ class Sigfox(object):
 
            .. note:: This method may result in multiple HTTP request to automatically
                      iterate through paged responses.
+                     
            List all users.
 
            >>> s.user_list(groupid)
@@ -505,7 +506,6 @@ class Sigfox(object):
            Only list users #10 to #20.
 
            >>> s.user_list(groupid, offset=10, limit=10)
-           
 
         """
 
