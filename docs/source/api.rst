@@ -7,12 +7,8 @@ python-sigfox  API
 This page describes the API of the **python-sigfox** package. All code
 examples have been copied from the official documentation.
 
-Importing the module
+The sigfoxapi module
 --------------------
-
-.. code-block:: python
-
-   >>> from sigfoxapi import Sigfox
 
 .. autodata:: sigfoxapi.DEBUG
 .. autodata:: sigfoxapi.IGNORE_SSL_VALIDATION
