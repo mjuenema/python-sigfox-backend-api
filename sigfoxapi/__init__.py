@@ -15,8 +15,11 @@ __version__ = '0.1.0'
 __license__ = 'BSD 2-clause "Simplified" License'
 
 SIGFOX_API_URL = 'https://backend.sigfox.com/api/'
+"""Enable debugging."""
 
 IGNORE_SSL_VALIDATION = False
+"""Whether to ignore SSL validation problems."""
+
 DEBUG = False
 
 
@@ -36,12 +39,12 @@ class Sigfox(object):
        To enable debugging and show the HTTP requests and responses set the global
        variable `sigfox.DEBUG` to ``True``.
 
-       >>> sigfox.DEBUG = True
+       >>> sigfoxapi.DEBUG = True
 
        In case of SSL problems the global variable `sigfox.IGNORE_SSL_VALIDATION`
        can be set to ``True``.
 
-       >>> sigfox.IGNORE_SSL_VALIDATION = True
+       >>> sigfoxapi.IGNORE_SSL_VALIDATION = True
 
     """
 

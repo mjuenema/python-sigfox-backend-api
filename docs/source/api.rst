@@ -14,6 +14,9 @@ Importing the module
 
    >>> from sigfoxapi import Sigfox
 
+.. autodata:: sigfoxapi.DEBUG
+.. autodata:: sigfoxapi.IGNORE_SSL_VALIDATION
+
 The Sigfox class
 ----------------
 
