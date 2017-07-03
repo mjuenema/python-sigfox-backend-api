@@ -148,8 +148,7 @@ class Sigfox(object):
 
         """
 
-        self.request('POST', '/devicetypes/edit', params=params)
-        return self.info(devicetypeid)
+        return self.request('POST', '/devicetypes/edit', params=params)
 
 
     def devicetype_list(self):
@@ -407,7 +406,7 @@ class Sigfox(object):
 
         """
 
-        return self.request('GET', '/api/callbacks/messages/error', params=params)
+        return self.request('GET', '/api/callbacks/messages/error', params=kwargs)
 
 
     def device_list(self, devicetypeid, **kwargs):
@@ -419,7 +418,7 @@ class Sigfox(object):
 
         """
 
-        return self.request('GET', '/devicetypes/%s/devices' % (devicetypeid), params=params)
+        return self.request('GET', '/devicetypes/%s/devices' % (devicetypeid), params=kwargs)
 
 
     def device_info(self, deviceid):
@@ -506,11 +505,12 @@ class Sigfox(object):
            Only list users #10 to #20.
 
            >>> s.user_list(groupid, offset=10, limit=10)
+           
 
         """
 
-        return self.request('GET', '/users/%s' % (groupid), params=params)
+        return self.request('GET', '/users/%s' % (groupid), params=kwargs)
 
 
 __all__ = ['DEBUG', 'IGNORE_SSL_VALIDATION', '__name__',
-           '__version__', '__license__', 'Sigox']
+           '__version__', '__license__', 'Sigfox']
