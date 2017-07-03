@@ -764,4 +764,4 @@ class Sigfox(object):
         return self.request('GET', '/users/%s' % (groupid), params=kwargs)
 
 
-__all__ = ['DEBUG', 'IGNORE_SSL_VALIDATION', 'Sigfox']
+__all__ = ['DEBUG', 'IGNORE_SSL_VALIDATION', 'Sigfox', '_dictasobj']
