@@ -80,6 +80,8 @@ class Sigfox(object):
 
            :param groupid: The group identifier.
            
+           :Example:
+           
            >>> s.group_info('489b848ee4b0ca4786945614')
            {
                "id":"489b848ee4b0ca4786945614",
@@ -101,6 +103,8 @@ class Sigfox(object):
 
     def group_list(self):
         """Lists all children groups of your group.
+        
+        
         
            >>> s.group_list()
            [
@@ -271,6 +275,8 @@ class Sigfox(object):
            :param callbacks: List of dictionaries as described in the official
                documentation.
                
+           :Example:
+           
            >>> new_callbacks = [
            ...     {
            ...         "channel" : "URL",
@@ -469,9 +475,6 @@ class Sigfox(object):
 
            .. note:: This method may result in multiple HTTP request to automatically
                      iterate through paged responses.
-
-           .. todo:: Actually implement iterating through paged responses!
-
            List all users.
 
            >>> s.user_list(groupid)
