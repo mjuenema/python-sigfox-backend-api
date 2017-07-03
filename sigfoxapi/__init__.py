@@ -7,14 +7,14 @@ Inspired by https://pypi.python.org/pypi/pySigfox.
 
 """
 
-__name__ = 'sigfoxapi'
+import drest
+import drest.serialization
+
+__author__ = 'Markus Juenemann <markus@juenemann.net>'
 __version__ = '0.0.1'
 __license__ = 'BSD 2-clause "Simplified" License'
 
 SIGFOX_API_URL = 'https://backend.sigfox.com/api/'
-
-import drest
-import drest.serialization
 
 IGNORE_SSL_VALIDATION = False
 DEBUG = False
@@ -79,9 +79,9 @@ class Sigfox(object):
         """Get the description of a particular group.
 
            :param groupid: The group identifier.
-           
+
            :Example:
-           
+
            >>> s.group_info('489b848ee4b0ca4786945614')
            {
                "id":"489b848ee4b0ca4786945614",
@@ -103,9 +103,9 @@ class Sigfox(object):
 
     def group_list(self):
         """Lists all children groups of your group.
-        
-        
-        
+
+
+
            >>> s.group_list()
            [
                {
@@ -119,7 +119,7 @@ class Sigfox(object):
                    ],
                    "billable":true,
                    "bssId": "bss-48631656321"
-                   }, 
+                   },
                    { ... }
            ]
 
@@ -133,7 +133,7 @@ class Sigfox(object):
 
            :param params: Dictionary of the format described in the
                official documentation
-             
+
            >>> params = {
            ...     "id" : "deadbeef0486300cbebef070",
            ...     "name" : "dtname",
@@ -153,9 +153,9 @@ class Sigfox(object):
 
     def devicetype_list(self):
         """Lists all device types available to your group.
-        
+
            ..note:: ```includeSubGroups``` and ```contractInfoId``` are currently not supported.
-        
+
            >>> s.devicetype_list()
            [
                {
@@ -166,10 +166,10 @@ class Sigfox(object):
                    "keepAlive" : 7200,
                    "payloadType" : "None",
                    "contract" : "523b1d10d777d3f5ae038a02"
-               }, 
+               },
                { ... }
            ]
-    
+
         """
 
         return self.request('GET', '/devicetypes')
@@ -179,31 +179,31 @@ class Sigfox(object):
         """Get the communication down events for devices belonging to a device type.
 
            :param devicetypeid: The device type identifier.
-           
+
            >>> s.devicetype_errors('5256c4d6c9a871b80f5a2e50')
-           [ 
+           [
                {
                    "deviceId" : "0235",
                    "time" : 1381410600026,
                    "message" : "No message received since 2013-10-08 15:36:21",
                    "severity" : "ERROR",
                    "deviceTypeId" : "5256c4d6c9a871b80f5a2e50",
-                   "callbacks" : [ 
+                   "callbacks" : [
                        {
                            "url" : "http://host/path?id=0235&time=1381410600",
                            "status" : 600,
                            "info" : "Connection refused: host/path"
-                       }, 
+                       },
                        {
                            "subject" : "some subject",
                            "message" : "some messages",
                            "status" : 200
                        }
                    ]
-               }, 
+               },
                { ... }
            ]
-           
+
         """
 
         return self.request('GET', '/devicetypes/%s/status/error' % (devicetypeid))
@@ -214,8 +214,8 @@ class Sigfox(object):
            belonging to a device type.
 
            :param devicetypeid: The device type identifier.
-           
-           See `Sigfox.errors()` for example output.
+
+           See `Sigfox.devicetype_errors()` for example output.
 
         """
 
@@ -229,7 +229,7 @@ class Sigfox(object):
         """Get the messages that were sent by all the devices of a device type.
 
            :param devicetypeid: The device type identifier.
-           
+
            >>> s.devicetype_messages('5256c4d6c9a871b80f5a2e50')
            [
                {
@@ -245,7 +245,7 @@ class Sigfox(object):
                    "linkQuality" : "GOOD",
                    "downlinkAnswerStatus" : {
                        "data" : "1511000a00007894"
-                    } 
+                    }
                },
                { ... }
            ]
@@ -260,7 +260,7 @@ class Sigfox(object):
            of the device type.
 
            :param devicetypeid: The device type identifier.
-           
+
            >>> s.devicetype_disengage('5256c4d6c9a871b80f5a2e50')
            None
 
@@ -273,9 +273,9 @@ class Sigfox(object):
 
            :param callbacks: List of dictionaries as described in the official
                documentation.
-               
+
            :Example:
-           
+
            >>> new_callbacks = [
            ...     {
            ...         "channel" : "URL",
@@ -292,7 +292,7 @@ class Sigfox(object):
            ...          "time" : "{time}"
            ...         },
            ...         "contentType" : "text/plain"
-           ...     }, 
+           ...     },
            ...     {
            ...         "channel" : "BATCH_URL",
            ...         "callbackType" : 0,
@@ -316,7 +316,7 @@ class Sigfox(object):
         """List the callbacks for a device type.
 
            :param devicetypeid: The device type identifier.
-           
+
            >>> s.callback_list('5256c4d6c9a871b80f5a2e50')
            [
                {
@@ -347,7 +347,7 @@ class Sigfox(object):
 
            :param devicetypeid: The device type identifier.
            :param callbackid: The callback identifier.
-           
+
            >>> s.callback_delete('5256c4d6c9a871b80f5a2e50', 'deadbeeffacecafebabecafe')
 
         """
@@ -361,7 +361,7 @@ class Sigfox(object):
 
            :param devicetypeid: The device type identifier.
            :param callbackid: The callback identifier.
-           
+
            >>> s.callback_enable('5256c4d6c9a871b80f5a2e50', 'deadbeeffacecafebabecafe')
 
         """
@@ -375,7 +375,7 @@ class Sigfox(object):
 
            :param devicetypeid: The device type identifier.
            :param callbackid: The callback identifier.
-           
+
            >>> s.callback_disable('5256c4d6c9a871b80f5a2e50', 'deadbeeffacecafebabecafe')
 
         """
@@ -389,7 +389,7 @@ class Sigfox(object):
 
            :param devicetypeid: The device type identifier.
            :param callbackid: The callback identifier.
-           
+
            >>> s.callback_downlink('5256c4d6c9a871b80f5a2e50', 'deadbeeffacecafebabecafe')
 
         """
@@ -416,6 +416,34 @@ class Sigfox(object):
            :param \**kwargs: Optional keyword arguments as described in the official
                documentation (`snr`, `limit`, `offset`).
 
+           >>> s.device_list('4d3091a05ee16b3cc86699ab', srn=1)         # 1 = for SNR values from 0 to 10 dB
+           [
+               {
+                   "id" : "002C",
+                   "name" : "Labege 4",
+                   "type" : "4d3091a05ee16b3cc86699ab",
+                   "last" : 1343321977,
+                   "averageSignal": 8.065601,
+                   "averageSnr": 8.065601,
+                   "averageRssi": -122.56,
+                   "state": 0,
+                   "lat" : 43.45,
+                   "lng" : 1.54,
+                   "computedLocation": {
+                       "lat" : 43.45,
+                       "lng" : 6.54,
+                       "radius": 500
+                   },
+                   "activationTime": 1404096340556,
+                   "pac": "545CB3B17AC98BA4",
+                   "tokenType": "CONTRACT",
+                   "contractId": "7896541254789654aedfba4c",
+                   "tokenEnd": 1449010800000,
+                   "preventRenewal": false
+               },
+               { ... }
+           ]
+
         """
 
         return self.request('GET', '/devicetypes/%s/devices' % (devicetypeid), params=kwargs)
@@ -426,18 +454,106 @@ class Sigfox(object):
 
            :param deviceid: The device identifier.
 
+           >>> s.device_info('002C')
+           {
+               "id" : "002C",
+               "name" : "Labege 4",
+               "type" : "4d3091a05ee16b3cc86699ab",
+               "last" : 1343321977,
+               "averageSignal": 8.065601,
+               "averageSnr": 8.065601,
+               "averageRssi": -122.56,
+               "state": 0,
+               "lat" : 43.45,
+               "lng" : 1.54,
+               "computedLocation": {
+                   "lat" : 43.45,
+                   "lng" : 6.54,
+                   "radius": 500
+               },
+               "activationTime": 1404096340556,
+               "pac": "545CB3B17AC98BA4",
+               "tokenType": "CONTRACT",
+               "contractId": "7896541254789654aedfba4c",
+               "tokenEnd": 1449010800000,
+               "preventRenewal": false
+           }
+
         """
 
         return self.request('GET', '/devices/%s' % (deviceid))
 
 
     def device_tokenstate(self, deviceid):
+        """Get information about a device's token
+
+           :param deviceid: The device identifier.
+
+           >>> s.device_tokenstate('4d3091a05ee16b3cc86699ab')
+           {
+                "code" : 1,
+                "detailMessage" : "Off contract",
+                "tokenType": "CONTRACT",
+                 "contractId": "7896541254789654aedfba4c",
+                 "tokenEnd": 1418673953200,
+            }
+
+        """
+
         return self.request('GET', '/devices/%s/token-state' % (deviceid))
 
-    def device_messages(self, deviceid, **params):
-        return self.request('GET', '/devices/%s/messages' % (deviceid), params=params)
+    def device_messages(self, deviceid, **kwargs):
+        """Get the messages that were sent by a device.
+
+           :param deviceid: The device identifier.
+           :param \**kwargs: Optional keyword arguments as described in the official
+               documentation (`before`, `since`, `limit`, `offset`).
+
+           >>> s.device_messages('4d3091a05ee16b3cc86699ab', since=time.time()-60*60*24)    # Last 24 hours
+           [
+               {
+                   "device" : "002C",
+                   "time" : 1343321977,
+                   "data" : "3235353843fc",
+                   "snr" : "38.2",
+                   "computedLocation": {
+                       "lat" : 43.45,
+                       "lng" : 6.54,
+                       "radius": 500
+                   },
+                   "linkQuality" : "GOOD",
+                   "downlinkAnswerStatus" : {
+                       "data" : "1511000a00007894"
+                   }
+               },
+               { ... }
+           ]
+
+        """
+
+        return self.request('GET', '/devices/%s/messages' % (deviceid), params=kwargs)
 
     def device_locations(self, deviceid, **params):
+        """Get the messages location.
+
+           :param deviceid: The device identifier.
+           :param \**kwargs: Optional keyword arguments as described in the official
+               documentation (`before`, `since`, `limit`, `offset`).
+
+           >>> s.device_locations('4d3091a05ee16b3cc86699ab', since=time.time()-60*60*24)    # Last 24 hours)
+           [
+               {
+                   "time" : 1343321977000,
+                   "valid" : true,
+                   "lat" : 42.4631156,
+                   "lng" : 1.5652321,
+                   "radius" : 360,
+               },
+               { ... }
+           ]
+
+        """
+
         return self.request('GET', '/devices/%s/locations' % (deviceid), params=params)
 
     def device_errors(self, deviceid, **params):
@@ -474,7 +590,7 @@ class Sigfox(object):
 
            .. note:: This method may result in multiple HTTP request to automatically
                      iterate through paged responses.
-                     
+
            List all users.
 
            >>> s.user_list(groupid)
@@ -512,5 +628,4 @@ class Sigfox(object):
         return self.request('GET', '/users/%s' % (groupid), params=kwargs)
 
 
-__all__ = ['DEBUG', 'IGNORE_SSL_VALIDATION', '__name__',
-           '__version__', '__license__', 'Sigfox']
+__all__ = ['DEBUG', 'IGNORE_SSL_VALIDATION', 'Sigfox']
