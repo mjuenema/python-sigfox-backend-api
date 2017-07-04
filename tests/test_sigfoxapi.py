@@ -319,7 +319,7 @@ class TestSigfoxDevicesObject(_TestSigfoxBaseObject):
 
     def test_device_messages(self):
          messages = self.s.device_messages(SIGFOX_DEVICE_ID)
-         assert isinstance(messages, sigfox._object)
+         assert isinstance(messages, sigfoxapi._object)
          if len(messages) > 0:
              for message in messages:
                  assert isinstance(message.data, str)
