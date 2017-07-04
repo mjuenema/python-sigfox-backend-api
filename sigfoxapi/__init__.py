@@ -336,7 +336,7 @@ class Sigfox(object):
            ]
 
            .. note:: The ``snr`` field is a string and not a float. This is what
-                     the REST-API returns and not changed here.
+                     the REST-API returns.
 
         """
 
@@ -618,6 +618,9 @@ class Sigfox(object):
                },
                { ... }
            ]
+
+           .. note:: The ``snr`` field is a string and not a float. This is what
+                     the REST-API returns.
 
         """
 
