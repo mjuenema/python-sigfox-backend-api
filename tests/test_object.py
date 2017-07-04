@@ -3,7 +3,7 @@ Test sigfoxapi._objdict()
 
 """
 
-from sigfoxapi import _dictasobj
+from sigfoxapi import _object
 
 DICT =  {'strkey': 'strvalue',
          'intkey': 1,
@@ -34,7 +34,7 @@ DICT =  {'strkey': 'strvalue',
                     }
          }
 
-OBJ = _dictasobj(DICT)
+OBJ = _object(DICT)
 
 class TestObjcDict(object):
 

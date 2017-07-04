@@ -1,6 +1,6 @@
 
 
-NOSETESTS = nosetests -s -v --pdb --with-coverage --cover-package=sigfoxapi
+NOSETESTS = nosetests --stop -v --pdb --with-coverage --cover-package=sigfoxapi
 
 
 all:
@@ -8,4 +8,4 @@ all:
 
 
 test:
-	$(NOSETESTS) tests/test_objasdict.py
+	$(NOSETESTS) tests/test_object.py tests/test_sigfoxapi.py

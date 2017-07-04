@@ -9,6 +9,7 @@ Inspired by https://pypi.python.org/pypi/pySigfox.
 
 import copy
 import drest
+import drest.exc
 import drest.serialization
 
 __author__ = 'Markus Juenemann <markus@juenemann.net>'
@@ -39,7 +40,9 @@ RETURN_OBJECTS = False
 """
 
 
-# TODO: handle paged responses
+class SigfoxApiError(Exception):
+    """Wrapper exception for all `drest` exceptions."""
+    pass
 
 
 class _object(object):
@@ -116,7 +119,10 @@ class Sigfox(object):
 
         """
 
-        resp = self.api.make_request(method, path, params=params, headers=headers)
+        try:
+            resp = self.api.make_request(method, path, params=params, headers=headers)
+        except (drest.exc.dRestRequestError) as e:
+            raise SigfoxApiError(str(e))
 
         try:
             data = resp.data['data']
@@ -182,14 +188,34 @@ class Sigfox(object):
         return self.request('GET', '/groups')
 
 
-    def devicetype_edit(self, params):
+    def devicetype_info(self,  devicetypeid):
+        """Get the description of a particular device type.
+
+           :param devicetypeid: The device type identifier.
+
+           >>> s.devicetype_info('4d3091a05ee16b3cc86699ab')
+           {
+               "id" : "4d3091a05ee16b3cc86699ab",
+               "name" : "Sigfox test device",
+               "group" : "4d39a4c9e03e6b3c430e2188",
+               "description" : "Little things in the black boxes",
+               "keepAlive" : 0,
+               "payloadType" : "Geolocation",
+               "contract" : "523b1d10d777d3f5ae038a02"
+           }
+
+        """
+
+        return self.request('GET', '/devicetypes/' + devicetypeid)
+
+
+    def devicetype_edit(self, devicetypeid, changes):
         """Edit a device type.
 
            :param params: Dictionary of the format described in the
                official documentation
 
-           >>> params = {
-           ...     "id" : "deadbeef0486300cbebef070",
+           >>> changes = {
            ...     "name" : "dtname",
            ...     "description" : "the description",
            ...     "keepAlive" : 3000,
@@ -198,11 +224,16 @@ class Sigfox(object):
            ...     "downlinkMode" : 0,
            ...     "downlinkDataString" : "deadbeefcafebabe",
            ... }
-           >>> s.devicetype_edit(params)
+           >>> s.devicetype_edit(changes)
+
+           .. note:: The `changes` parameter may already contain the
+                     devicetype identifier (``id``) but it will be overridden
+                     by `devicetypeid`.
 
         """
 
-        return self.request('POST', '/devicetypes/edit', params=params)
+        changes.update({'id': devicetypeid})
+        return self.request('POST', '/devicetypes/edit', params=changes)
 
 
     def devicetype_list(self):
@@ -303,6 +334,9 @@ class Sigfox(object):
                },
                { ... }
            ]
+
+           .. note:: The ``snr`` field is a string and not a float. This is what
+                     the REST-API returns and not changed here.
 
         """
 
@@ -458,9 +492,11 @@ class Sigfox(object):
                documentation (`limit`, `offset`, `since`, `before`, `hexId`,
                `deviceTypeId`, `groupId`).
 
+           .. bug:: Does not work. I always get a ``400 - Bad Request`` error.
+
         """
 
-        return self.request('GET', '/api/callbacks/messages/error', params=kwargs)
+        return self.request('GET', '/callbacks/messages/error', params=kwargs)
 
 
     def device_list(self, devicetypeid, **kwargs):
@@ -820,7 +856,8 @@ class Sigfox(object):
 
         """
 
-        return self.request('GET', '/users/%s' % (groupid), params=kwargs)
+        kwargs.update({'groupId': groupid})
+        return self.request('GET', '/users', params=kwargs)
 
 
 __all__ = ['DEBUG', 'IGNORE_SSL_VALIDATION', 'Sigfox', '_dictasobj']
