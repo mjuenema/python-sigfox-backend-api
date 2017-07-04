@@ -7,20 +7,82 @@ Inspired by https://pypi.python.org/pypi/pySigfox.
 
 """
 
+import copy
 import drest
+import drest.exc
 import drest.serialization
 
 __author__ = 'Markus Juenemann <markus@juenemann.net>'
-__version__ = '0.1.0'
+__version__ = '0.2.0'
 __license__ = 'BSD 2-clause "Simplified" License'
 
 SIGFOX_API_URL = 'https://backend.sigfox.com/api/'
 
 IGNORE_SSL_VALIDATION = False
+"""Set to ``True`` to ignore SSL validation problems."""
+
 DEBUG = False
+"""Set to ``True`` to enable debugging."""
+
+RETURN_OBJECTS = False
+"""Change to ``True`` to return objects instead of dictionaries. Returning
+   objects allows to access fields in the ``object.field`` syntax instead
+   of ``dict['field']`` which some people may prefer.
+
+   >>> sigfoxapi.RETURN_OJECTS = False
+   >>> group = s.group_info('489b848ee4b0ca4786945614')
+   >>> group['name']
+   Group 1
+   >>> sigfoxapi.RETURN_OJECTS = True
+   >>> group = s.group_info('489b848ee4b0ca4786945614')
+   >>> group.name
+   Group 1
+"""
 
 
-# TODO: handle paged responses
+class SigfoxApiError(Exception):
+    """Wrapper exception for all `drest` exceptions."""
+    pass
+
+
+class _object(object):
+    """Convert a dictionary to an object.
+
+       `_object` is used internally to implement the
+       ``sigfoxapi.RETURN_OBJECTS=True`` functionality.
+
+       All attributes are read-only.
+
+       This class works in the context of this module
+       but may fail elsewhere.
+
+    """
+
+    def __init__(self, _data):
+        self._data = _data
+
+    def __getattr__(self, name):
+        try:
+            if isinstance(self._data[name], dict):
+                return _object(self._data[name])
+            elif isinstance(self._data[name], list):
+                return _object(self._data[name])
+            else:
+                return self._data[name]
+        except KeyError:
+            raise AttributeError(name)
+
+    def __getitem__(self,  key):
+        value = self._data[key]
+        if isinstance(value, dict):
+            return _object(value)
+        elif isinstance(value, list):
+            return _object(value)
+        else:
+            return value
+
+    def __len__(self):
+        return len(self._data)
 
 
 class Sigfox(object):
@@ -33,15 +95,8 @@ class Sigfox(object):
 
        >>> s = Sigfox('1234567890abcdef', 'fedcba09876543221')
 
-       To enable debugging and show the HTTP requests and responses set the global
-       variable `sigfox.DEBUG` to ``True``.
-
-       >>> sigfox.DEBUG = True
-
-       In case of SSL problems the global variable `sigfox.IGNORE_SSL_VALIDATION`
-       can be set to ``True``.
-
-       >>> sigfox.IGNORE_SSL_VALIDATION = True
+       .. note:: Response paging has not been implemented yet, i.e. currently
+                 at most 100 results (the backend default) will be returned.
 
     """
 
@@ -67,12 +122,20 @@ class Sigfox(object):
 
         """
 
-        resp = self.api.make_request(method, path, params=params, headers=headers)
+        try:
+            resp = self.api.make_request(method, path, params=params, headers=headers)
+        except (drest.exc.dRestRequestError) as e:
+            raise SigfoxApiError(str(e))
 
         try:
-            return resp.data['data']
+            data = resp.data['data']
         except (KeyError, TypeError):
-            return resp.data
+            data = resp.data
+
+        if RETURN_OBJECTS:  # and isinstance(data, dict):
+            return _object(data)
+        else:
+            return data
 
 
     def group_info(self, groupid):
@@ -128,14 +191,34 @@ class Sigfox(object):
         return self.request('GET', '/groups')
 
 
-    def devicetype_edit(self, params):
+    def devicetype_info(self,  devicetypeid):
+        """Get the description of a particular device type.
+
+           :param devicetypeid: The device type identifier.
+
+           >>> s.devicetype_info('4d3091a05ee16b3cc86699ab')
+           {
+               "id" : "4d3091a05ee16b3cc86699ab",
+               "name" : "Sigfox test device",
+               "group" : "4d39a4c9e03e6b3c430e2188",
+               "description" : "Little things in the black boxes",
+               "keepAlive" : 0,
+               "payloadType" : "Geolocation",
+               "contract" : "523b1d10d777d3f5ae038a02"
+           }
+
+        """
+
+        return self.request('GET', '/devicetypes/' + devicetypeid)
+
+
+    def devicetype_edit(self, devicetypeid, changes):
         """Edit a device type.
 
            :param params: Dictionary of the format described in the
                official documentation
 
-           >>> params = {
-           ...     "id" : "deadbeef0486300cbebef070",
+           >>> changes = {
            ...     "name" : "dtname",
            ...     "description" : "the description",
            ...     "keepAlive" : 3000,
@@ -144,17 +227,22 @@ class Sigfox(object):
            ...     "downlinkMode" : 0,
            ...     "downlinkDataString" : "deadbeefcafebabe",
            ... }
-           >>> s.devicetype_edit(params)
+           >>> s.devicetype_edit(changes)
+
+           .. note:: The `changes` parameter may already contain the
+                     devicetype identifier (``id``) but it will be overridden
+                     by `devicetypeid`.
 
         """
 
-        return self.request('POST', '/devicetypes/edit', params=params)
+        changes.update({'id': devicetypeid})
+        return self.request('POST', '/devicetypes/edit', params=changes)
 
 
     def devicetype_list(self):
         """Lists all device types available to your group.
 
-           ..note:: ```includeSubGroups``` and ```contractInfoId``` are currently not supported.
+           ..note:: ``includeSubGroups`` and ``contractInfoId`` are currently not supported.
 
            >>> s.devicetype_list()
            [
@@ -249,6 +337,9 @@ class Sigfox(object):
                },
                { ... }
            ]
+
+           .. note:: The ``snr`` field is a string and not a float. This is what
+                     the REST-API returns.
 
         """
 
@@ -404,9 +495,11 @@ class Sigfox(object):
                documentation (`limit`, `offset`, `since`, `before`, `hexId`,
                `deviceTypeId`, `groupId`).
 
+           .. bug:: Does not work. I always get a ``400 - Bad Request`` error.
+
         """
 
-        return self.request('GET', '/api/callbacks/messages/error', params=kwargs)
+        return self.request('GET', '/callbacks/messages/error', params=kwargs)
 
 
     def device_list(self, devicetypeid, **kwargs):
@@ -528,6 +621,9 @@ class Sigfox(object):
                },
                { ... }
            ]
+
+           .. note:: The ``snr`` field is a string and not a float. This is what
+                     the REST-API returns.
 
         """
 
@@ -676,7 +772,7 @@ class Sigfox(object):
                }
            }
 
-           Each entry in ```consumption``` is the data for one day, starting with the
+           Each entry in ``consumption`` is the data for one day, starting with the
            1st of January.
 
         """
@@ -688,7 +784,7 @@ class Sigfox(object):
 
            :param lat: The decimal latitude.
            :param lng: The decimal longitude.
-           :param mode: Can be either ```INDOOR``` or ```OUTDOOR```.
+           :param mode: Can be either ``INDOOR`` or ``OUTDOOR``.
 
 
            >>> s.coverage_redundancy(43.415, 1.9693, mode='OUTDOOR')
@@ -706,7 +802,7 @@ class Sigfox(object):
 
            :param lat: The decimal latitude.
            :param lng: The decimal longitude.
-           :param mode: Can be either ```INDOOR```, ```OUTDOOR``` or ```UNDERGROUND```.
+           :param mode: Can be either ``INDOOR``, ``OUTDOOR`` or ``UNDERGROUND``.
 
            The return value contains the margins values (dB) for redundancy level 1, 2 and 3.
 
@@ -766,7 +862,8 @@ class Sigfox(object):
 
         """
 
-        return self.request('GET', '/users/%s' % (groupid), params=kwargs)
+        kwargs.update({'groupId': groupid})
+        return self.request('GET', '/users', params=kwargs)
 
 
-__all__ = ['DEBUG', 'IGNORE_SSL_VALIDATION', 'Sigfox']
+__all__ = ['DEBUG', 'IGNORE_SSL_VALIDATION', 'Sigfox', '_dictasobj']
