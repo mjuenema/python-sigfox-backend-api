@@ -58,28 +58,31 @@ class _object(object):
 
     """
 
-    def __init__(self, data):
-        self.data = data
+    def __init__(self, _data):
+        self._data = _data
 
     def __getattr__(self, name):
         try:
-            if isinstance(self.data[name], dict):
-                return _object(self.data[name])
-            elif isinstance(self.data[name], list):
-                return _object(self.data[name])
+            if isinstance(self._data[name], dict):
+                return _object(self._data[name])
+            elif isinstance(self._data[name], list):
+                return _object(self._data[name])
             else:
-                return self.data[name]
+                return self._data[name]
         except KeyError:
             raise AttributeError(name)
 
     def __getitem__(self,  key):
-        value = self.data[key]
+        value = self._data[key]
         if isinstance(value, dict):
             return _object(value)
         elif isinstance(value, list):
             return _object(value)
         else:
             return value
+
+    def __len__(self):
+        return len(self._data)
 
 
 class Sigfox(object):
@@ -129,7 +132,7 @@ class Sigfox(object):
         except (KeyError, TypeError):
             data = resp.data
 
-        if RETURN_OBJECTS and isinstance(data, dict):
+        if RETURN_OBJECTS:  # and isinstance(data, dict):
             return _object(data)
         else:
             return data
