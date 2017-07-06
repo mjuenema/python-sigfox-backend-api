@@ -72,8 +72,8 @@ The example retrieves information about a device.
          "preventRenewal": false
     }
 
-It is also possible to have the `Sigfox()` methods return objects instead
-of dictionaries by setting `sigfoxapi.RETURN_OBJECTS` to ``True``.
+It is also possible to have the ``Sigfox()`` methods return objects instead
+of dictionaries by setting ``sigfoxapi.RETURN_OBJECTS`` to ``True``.
 
 .. code-block:: python
 
