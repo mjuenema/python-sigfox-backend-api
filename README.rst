@@ -13,7 +13,7 @@ python-sigfoxapi
    :target: https://github.com/mjuenema/python-sigfox-backend-api/issues
    :alt: Issues
 
-.. image:: https://img.shields.io/travis/mjuenema/python-sigfox-backend-api.svg?style=flat-square
+.. image:: https://img.shields.io/travis/mjuenema/python-sigfox-backend-api/master.svg?style=flat-square
    :target: https://www.travis-ci.org/mjuenema/python-sigfox-backend-api/builds
    :alt: Travis-CI
 
