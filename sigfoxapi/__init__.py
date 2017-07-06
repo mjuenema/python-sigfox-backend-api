@@ -12,6 +12,8 @@ import drest
 import drest.exc
 import drest.serialization
 
+import sigfoxapi.requesthandler
+
 __author__ = 'Markus Juenemann <markus@juenemann.net>'
 __version__ = '0.2.0'
 __license__ = 'BSD 2-clause "Simplified" License'
@@ -148,7 +150,9 @@ class Sigfox(object):
                              serialize=True,
                              deserialize=True,
                              ignore_ssl_validation=IGNORE_SSL_VALIDATION,
-                             trailing_slash=False)
+                             trailing_slash=False,
+                             request_handler = sigfoxapi.requesthandler.RequestHandler
+                             )
         self.api.auth(login, password)
 
 
