@@ -70,11 +70,6 @@ class SigfoxApiAccessDenied(SigfoxApiError):
     pass
 
 
-class SigfoxApiNotFound(SigfoxApiError):
-    """Exception for HTTP error 404 (Not Found)."""
-    pass
-
-
 class SigfoxApiServerError(SigfoxApiError):
     """Exception for HTTP error 500 (Internal Server Error)."""
     pass
@@ -84,15 +79,12 @@ class SigfoxApiNotFound(SigfoxApiError):
     """Exception for HTTP error 404 (Not Found).
 
        >>> try:
-       ...     s.group_info('does_not_exist')
+       ...     s.group_info('123456789012345678901234')
        ... except SigfoxApiNotFound:
        ...     print('Not found')
 
     """
     pass
-
-
-
 
 
 class Object(object):

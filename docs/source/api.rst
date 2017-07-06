@@ -15,7 +15,7 @@ The sigfoxapi module
 .. autodata:: sigfoxapi.RETURN_OBJECTS
 
 Exceptions
-~~~~~~~~~~
+----------
 
 .. autoclass:: sigfoxapi.SigfoxApiError
 .. autoclass:: sigfoxapi.SigfoxApiAuthError
