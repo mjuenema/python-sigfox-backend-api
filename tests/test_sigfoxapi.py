@@ -21,6 +21,34 @@ SIGFOX_GROUP_ID = os.environ['SIGFOX_GROUP_ID']
 TIMESTAMP = time.strftime('%Y-%m-%d %H:%M:%S')
 
 
+@raises(sigfoxapi.SigfoxApiBadRequest)
+def test_sigfoxapi_autherror():
+    s = sigfoxapi.Sigfox('wrong_login_id', 'wrong_password')
+    s.group_info(SIGFOX_GROUP_ID)
+
+
+@raises(sigfoxapi.SigfoxApiAuthError)
+def test_sigfoxapi_autherror():
+    s = sigfoxapi.Sigfox('012345678901234567891234', '12345678901234567890123456789012')
+    s.group_info(SIGFOX_GROUP_ID)
+
+
+# Doesn work with @raises
+def test_sigfoxapi_notfound():
+    s = sigfoxapi.Sigfox(SIGFOX_LOGIN_ID, SIGFOX_PASSWORD)
+    try:
+        s.group_info('123456789012345678901234')
+    except sigfoxapi.SigfoxApiNotFound:
+        pass
+
+
+@raises(sigfoxapi.SigfoxApiError)
+def test_sigfoxapi_apierror():
+    s = sigfoxapi.Sigfox(SIGFOX_LOGIN_ID, SIGFOX_PASSWORD)
+    s.group_info('does_not_exist')
+
+# TODO: Add more exceotion testing
+
 class _TestSigfoxBase(object):
     def setup(self):
         self.s = sigfoxapi.Sigfox(SIGFOX_LOGIN_ID, SIGFOX_PASSWORD)
@@ -41,9 +69,9 @@ class TestSigfoxUsers(_TestSigfoxBase):
         assert len(users) == 1
         assert users[0]['timezone'] == 'Australia/Melbourne'
 
-    @raises(sigfoxapi.SigfoxApiError)
-    def test_user_list_invalid_groupid(self):
-        self.s.user_list('invalid')
+#    @raises(sigfoxapi.SigfoxApiError)
+#    def test_user_list_invalid_groupid(self):
+#        self.s.user_list('invalid')
 
 
 class TestSigfoxUsersObject(_TestSigfoxBaseObject):

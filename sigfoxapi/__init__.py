@@ -41,8 +41,58 @@ RETURN_OBJECTS = False
 
 
 class SigfoxApiError(Exception):
-    """Wrapper exception for all `drest` exceptions."""
+    """Base exception for all errors.
+
+       >>> try:
+       ...     s.group_info('does_not_exist')
+       ... except SigfoxApiNotFound:
+       ...     print('Not found')
+       ... except SigfoxApiError:
+       ...     print('Other Sigfox error')
+
+    """
+
     pass
+
+
+class SigfoxApiBadRequest(SigfoxApiError):
+    """Exception for HTTP error 400 (Bad Request)."""
+    pass
+
+
+class SigfoxApiAuthError(SigfoxApiError):
+    """Exception for HTTP error 401 (Authentication Error)."""
+    pass
+
+
+class SigfoxApiAccessDenied(SigfoxApiError):
+    """Exception for HTTP error 403 (Access Denied)."""
+    pass
+
+
+class SigfoxApiNotFound(SigfoxApiError):
+    """Exception for HTTP error 404 (Not Found)."""
+    pass
+
+
+class SigfoxApiServerError(SigfoxApiError):
+    """Exception for HTTP error 500 (Internal Server Error)."""
+    pass
+
+
+class SigfoxApiNotFound(SigfoxApiError):
+    """Exception for HTTP error 404 (Not Found).
+
+       >>> try:
+       ...     s.group_info('does_not_exist')
+       ... except SigfoxApiNotFound:
+       ...     print('Not found')
+
+    """
+    pass
+
+
+
 
 
 class Object(object):
@@ -125,7 +175,18 @@ class Sigfox(object):
         try:
             resp = self.api.make_request(method, path, params=params, headers=headers)
         except (drest.exc.dRestRequestError) as e:
-            raise SigfoxApiError(str(e))
+            if e.response.status == 400:
+                raise SigfoxApiBadRequest(str(e))
+            elif e.response.status == 401:
+                raise SigfoxApiAuthError(str(e))
+            elif e.response.status == 403:
+                raise SigfoxApiAccessDenied(str(e))
+            elif e.response.status == 404:
+                raise SigfoxApiNotFound(str(e))
+            elif e.response.status == 500:
+                raise SigfoxApiServerError(str(e))
+            else:
+                raise SigfoxApiError(str(e))
 
         try:
             data = resp.data['data']
