@@ -50,7 +50,7 @@ class TestSigfoxUsersObject(_TestSigfoxBaseObject):
 
     def test_user_list(self):
         users = self.s.user_list(SIGFOX_GROUP_ID)
-        assert isinstance(users, sigfoxapi._object)
+        assert isinstance(users, sigfoxapi.Object)
         assert len(users) == 1
         assert users[0].timezone == 'Australia/Melbourne'
 
@@ -72,12 +72,12 @@ class TestSigfoxGroupsObject(_TestSigfoxBaseObject):
 
     def test_group_info(self):
         group = self.s.group_info(SIGFOX_GROUP_ID)
-        assert isinstance(group, sigfoxapi._object)
+        assert isinstance(group, sigfoxapi.Object)
         assert group.id == SIGFOX_GROUP_ID
 
     def test_group_list(self):
         groups = self.s.group_list()
-        assert isinstance(groups, sigfoxapi._object)
+        assert isinstance(groups, sigfoxapi.Object)
         assert len(groups) == 0
 
 
@@ -132,12 +132,12 @@ class TestSigfoxDevicetypesObject(_TestSigfoxBaseObject):
 
     def test_devicetype_info(self):
         devicetype = self.s.devicetype_info(SIGFOX_DEVICETYPE_ID)
-        assert isinstance(devicetype, sigfoxapi._object)
+        assert isinstance(devicetype, sigfoxapi.Object)
         assert devicetype.id == SIGFOX_DEVICETYPE_ID
 
     def test_devicetype_list(self):
         devicetypes = self.s.devicetype_list()
-        assert isinstance(devicetypes, sigfoxapi._object)
+        assert isinstance(devicetypes, sigfoxapi.Object)
 
         found = [devicetype for devicetype in devicetypes
                  if devicetype.id == SIGFOX_DEVICETYPE_ID]
@@ -145,19 +145,19 @@ class TestSigfoxDevicetypesObject(_TestSigfoxBaseObject):
 
     def test_devicetype_errors(self):
          errors = self.s.devicetype_errors(SIGFOX_DEVICETYPE_ID)
-         assert isinstance(errors, sigfoxapi._object)
+         assert isinstance(errors, sigfoxapi.Object)
          if len(errors) > 0:
              pass   # TODO
 
     def test_devicetype_warnings(self):
          warnings = self.s.devicetype_warnings(SIGFOX_DEVICETYPE_ID)
-         assert isinstance(warnings, sigfoxapi._object)
+         assert isinstance(warnings, sigfoxapi.Object)
          if len(warnings) > 0:
              pass   # TODO
 
     def test_devicetype_messages(self):
          messages = self.s.devicetype_messages(SIGFOX_DEVICETYPE_ID)
-         assert isinstance(messages, sigfoxapi._object)
+         assert isinstance(messages, sigfoxapi.Object)
          if len(messages) > 0:
              for message in messages:
                  assert isinstance(message.data, str)
@@ -304,10 +304,10 @@ class TestSigfoxDevicesObject(_TestSigfoxBaseObject):
 
     def test_device_list(self):
         devices = self.s.device_list(SIGFOX_DEVICETYPE_ID)
-        assert isinstance(devices, sigfoxapi._object)
+        assert isinstance(devices, sigfoxapi.Object)
         found = [device for device in devices if device.id == SIGFOX_DEVICE_ID]
         assert len(found) == 1
-        assert isinstance(found[0], sigfoxapi._object)
+        assert isinstance(found[0], sigfoxapi.Object)
 
     def test_device_info(self):
         device = self.s.device_info(SIGFOX_DEVICE_ID)
@@ -319,7 +319,7 @@ class TestSigfoxDevicesObject(_TestSigfoxBaseObject):
 
     def test_device_messages(self):
          messages = self.s.device_messages(SIGFOX_DEVICE_ID)
-         assert isinstance(messages, sigfoxapi._object)
+         assert isinstance(messages, sigfoxapi.Object)
          if len(messages) > 0:
              for message in messages:
                  assert isinstance(message.data, str)
@@ -330,27 +330,27 @@ class TestSigfoxDevicesObject(_TestSigfoxBaseObject):
 
     def test_device_locations(self):
          locations = self.s.device_locations(SIGFOX_DEVICE_ID)
-         assert isinstance(locations, sigfoxapi._object)
+         assert isinstance(locations, sigfoxapi.Object)
          if len(locations) > 0:
              for location in locations:
                  assert isinstance(location.valid, bool)
 
     def test_device_warnings(self):
          warnings = self.s.device_warnings(SIGFOX_DEVICE_ID)
-         assert isinstance(warnings, sigfoxapi._object)
+         assert isinstance(warnings, sigfoxapi.Object)
 
     def test_device_errors(self):
          errors = self.s.device_errors(SIGFOX_DEVICE_ID)
-         assert isinstance(errors, sigfoxapi._object)
+         assert isinstance(errors, sigfoxapi.Object)
 
     def test_device_networkstate(self):
         networkstate = self.s.device_networkstate(SIGFOX_DEVICE_ID)
-        assert isinstance(networkstate, sigfoxapi._object)
+        assert isinstance(networkstate, sigfoxapi.Object)
         assert networkstate.networkStatus in ['OK', 'NOK']
 
     def test_device_messagemetrics(self):
         metrics = self.s.device_messagemetrics(SIGFOX_DEVICE_ID)
-        assert isinstance(metrics, sigfoxapi._object)
+        assert isinstance(metrics, sigfoxapi.Object)
         assert isinstance(metrics.lastDay, int)
         assert isinstance(metrics.lastMonth, int)
         assert isinstance(metrics.lastWeek, int)

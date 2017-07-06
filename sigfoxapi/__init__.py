@@ -45,10 +45,10 @@ class SigfoxApiError(Exception):
     pass
 
 
-class _object(object):
+class Object(object):
     """Convert a dictionary to an object.
 
-       `_object` is used internally to implement the
+       `Object` is used internally to implement the
        ``sigfoxapi.RETURN_OBJECTS=True`` functionality.
 
        All attributes are read-only.
@@ -64,9 +64,9 @@ class _object(object):
     def __getattr__(self, name):
         try:
             if isinstance(self._data[name], dict):
-                return _object(self._data[name])
+                return Object(self._data[name])
             elif isinstance(self._data[name], list):
-                return _object(self._data[name])
+                return Object(self._data[name])
             else:
                 return self._data[name]
         except KeyError:
@@ -75,9 +75,9 @@ class _object(object):
     def __getitem__(self,  key):
         value = self._data[key]
         if isinstance(value, dict):
-            return _object(value)
+            return Object(value)
         elif isinstance(value, list):
-            return _object(value)
+            return Object(value)
         else:
             return value
 
@@ -133,7 +133,7 @@ class Sigfox(object):
             data = resp.data
 
         if RETURN_OBJECTS:  # and isinstance(data, dict):
-            return _object(data)
+            return Object(data)
         else:
             return data
 

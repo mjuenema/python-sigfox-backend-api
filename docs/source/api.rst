@@ -12,6 +12,7 @@ The sigfoxapi module
 
 .. autodata:: sigfoxapi.DEBUG
 .. autodata:: sigfoxapi.IGNORE_SSL_VALIDATION
+.. autodata:: sigfoxapi.RETURN_OBJECTS
 
 The Sigfox class
 ----------------
