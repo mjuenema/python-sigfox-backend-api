@@ -79,8 +79,6 @@ of dictionaries by setting `sigfoxapi.RETURN_OBJECTS` to ``True``.
 
    >>> sigfoxapi.RETURN_OBJECTS = True
    >>> device = s.device_info('002C')
-   >>> device.id
-   002C
    >>> device.averageRssi
    -122.56
    >>> device.computedLocation.lat
