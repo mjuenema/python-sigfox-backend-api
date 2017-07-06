@@ -5,11 +5,11 @@ python-sigfoxapi
    :target: https://pypi.python.org/pypi/sigfoxapi
    :alt: Version
 
-.. image:: https://img.shields.io/github/license/mashape/apistatus.svg?style=flat-square
+.. image:: https://img.shields.io/github/license/mjuenema/python-sigfox-backend-api.svg?style=flat-square
    :target: https://opensource.org/licenses/BSD-2-Clause
    :alt: License
 
-.. image:: https://img.shields.io/github/issues/badges/shields.svg?style=flat-square
+.. image:: https://img.shields.io/github/issues/mjuenema/python-sigfox-backend-api.svg?style=flat-square
    :target: https://github.com/mjuenema/python-sigfox-backend-api/issues
    :alt: Issues
 
