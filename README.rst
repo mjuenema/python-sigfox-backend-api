@@ -17,6 +17,10 @@ python-sigfoxapi
    :target: https://www.travis-ci.org/mjuenema/python-sigfox-backend-api/builds
    :alt: Travis-CI
 
+.. image:: https://img.shields.io/codecov/c/github/mjuenema/python-sigfox-backend-api/master.svg?style=flat-square
+   :target: https://codecov.io/gh/mjuenema/python-sigfox-backend-api
+   :alt: Coverage
+
 **python-sigfoxapi** is a Python wrapper for the Sigfox_ backend REST API. 
 
 .. _Sigfox: https://www.sigfox.com
