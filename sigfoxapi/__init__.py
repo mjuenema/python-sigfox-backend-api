@@ -8,6 +8,9 @@ Inspired by https://pypi.python.org/pypi/pySigfox.
 """
 
 import copy
+import urllib.parse
+import functools
+
 import drest
 import drest.exc
 import drest.serialization
@@ -58,7 +61,23 @@ class SigfoxApiError(Exception):
 
 
 class SigfoxApiBadRequest(SigfoxApiError):
-    """Exception for HTTP error 400 (Bad Request)."""
+    """Exception for HTTP error 400 (Bad Request).
+
+
+       .. important:: This exception will also be raised if the `before` or
+           `since` arguments to some methods are set in a way that
+           no results would be returned. For example I didn't send
+           any messages before 01-May-2017 so searching for any 
+           will raise `SigfoxApiBadRequest` instead of returning
+           an empty list!
+
+           >>> t = 1493560800    # Unix timestamp 01-May-2017 00:00:00
+           >>> try:
+           ...     s.device_messages(SIGFOX_DEVICE_ID, before=t)
+           ... except SigfoxApiBadRequest:
+           ...     print("No Sigfox messages found before 01-May-2017")
+
+    """
     pass
 
 
@@ -128,6 +147,13 @@ class Object(object):
     def __len__(self):
         return len(self._data)
 
+    def __add__(self, other):
+        """Implement ``sigfoxapi.Object + sigfoxapi.Object``."""
+        return Object(self._data + other._data)
+
+    def __iadd__(self, other):
+        self._data += other._data
+        return self
 
 class Sigfox(object):
     """Interact with the Sigfox backend API.
@@ -143,6 +169,34 @@ class Sigfox(object):
                  at most 100 results (the backend default) will be returned.
 
     """
+
+    def next(self, *args, **kwargs):
+        """Fetch the next page of results for some methods.
+
+           Call this method whenever another method has returned only
+           a subset of the results. 
+
+           >>> messages = s.device_messages('4d3091a05ee16b3cc86699ab')
+           >>> while s.next:
+           ...     messages += s.next()
+           >>> len(messages)
+           310
+           >>> devices = s.device_list('4d3091a05ee16b3cc86699ab')
+           >>> while s.next:
+           ...     devices += s.next()
+           >>> len(devices)
+           22
+
+           .. warning:: Be mindful that this may return a huge number of
+                        results if used exactly as in the example above.
+
+        """
+
+        # `Sigfox.next()` will be set in `Sigfox.request()` to ``None`` or
+        # a `functool.partial(...)` method matching the original method.
+        # The code here is only for documentation purposes.
+        pass
+
 
     def __init__(self, login, password):
         self.api = drest.API(SIGFOX_API_URL, debug=DEBUG,
@@ -188,6 +242,21 @@ class Sigfox(object):
             data = resp.data['data']
         except (KeyError, TypeError):
             data = resp.data
+
+        # Set Sigfox.next()`by extracting the parameters from the 'next' URL and
+        # currying the self.request().
+        try:
+            next_params = dict(urllib.parse.parse_qsl(resp.data['paging']['next'].split('?')[1]))
+            if next_params:
+                try:
+                    params.update(next_params)
+                except AttributeError:
+                    params = next_params
+                self.next = functools.partial(self.request,method, path, params, headers)
+            else:
+                self.next = None
+        except (KeyError, TypeError):
+            self.next = None
 
         if RETURN_OBJECTS:  # and isinstance(data, dict):
             return Object(data)

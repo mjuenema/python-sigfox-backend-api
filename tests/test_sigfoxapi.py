@@ -1,4 +1,17 @@
 """
+Tests for sigfoxapi.
+
+The following environment variables have to be set:
+
+SIGFOX_LOGIN_ID
+SIGFOX_PASSWORD
+SIGFOX_DEVICETYPE_ID
+SIGFOX_DEVICE_ID
+SIGFOX_USER_ID
+SIGFOX_GROUP_ID
+
+WARNING: These tests operate against the live Sigfox backend. Some tests
+         are specific to my personal setup.
 
 """
 
@@ -257,6 +270,28 @@ class TestSigfoxCallbacks(_TestSigfoxBase):
 
         assert len(found) == 0
 
+    def test_callback_errors(self):
+        errors = self.s.callback_errors()
+        for error in errors:
+            assert error['device']
+            assert error['deviceType']
+            assert error['data']
+            assert error['time']
+            assert error['snr']
+
+    def test_callback_errors_devicetypeid(self):
+        errors = self.s.callback_errors(deviceTypeId=SIGFOX_DEVICETYPE_ID)
+        for error in errors:
+            assert error['deviceType'] == SIGFOX_DEVICETYPE_ID
+
+    def test_callback_errors_deviceid(self):
+        errors = self.s.callback_errors(hexId=SIGFOX_DEVICE_ID)
+        for error in errors:
+            assert error['device'] == SIGFOX_DEVICE_ID
+
+    def test_callback_errors_groupid(self):
+        errors = self.s.callback_errors(groupId=SIGFOX_GROUP_ID)
+
 
 class TestSigfoxCallbacksObject(_TestSigfoxBaseObject):
 
@@ -266,6 +301,15 @@ class TestSigfoxCallbacksObject(_TestSigfoxBaseObject):
                  if callback.channel == 'EMAIL' and
                     callback.message == TIMESTAMP]
         assert found == []
+
+    def test_callback_errors(self):
+        errors = self.s.callback_errors()
+        for error in errors:
+            assert error.device
+            assert error.deviceType
+            assert error.data
+            assert error.time
+            assert error.snr
 
 
 class TestSigfoxDevices(_TestSigfoxBase):
@@ -295,6 +339,39 @@ class TestSigfoxDevices(_TestSigfoxBase):
                  assert isinstance(message['linkQuality'], str)
                  assert isinstance(message['snr'], str)
                  assert isinstance(message['time'], int)
+
+    def test_device_messages_limit_offset(self):
+         messages1 = self.s.device_messages(SIGFOX_DEVICE_ID, limit=10)
+         assert len(messages1) == 10
+         messages2 = self.s.device_messages(SIGFOX_DEVICE_ID, limit=1, offset=9)
+         assert messages1[9]['time'] == messages2[0]['time']
+
+    def test_device_messages_before(self):
+         messages = self.s.device_messages(SIGFOX_DEVICE_ID, before=1497905981)
+         assert len(messages) == 1
+
+    @raises(sigfoxapi.SigfoxApiBadRequest)
+    def test_device_messages_before_invalid(self):
+         messages = self.s.device_messages(SIGFOX_DEVICE_ID, before=1493560800)
+         assert len(messages) == 0
+
+    def test_device_messages_next_add(self):
+         messages = self.s.device_messages(SIGFOX_DEVICE_ID)
+         if len(messages) == 100:
+             assert self.s.next is not None
+             while self.s.next:
+                 messages = messages + self.s.next()
+             assert len(messages) > 100
+             assert self.s.next is None
+
+    def test_device_messages_next_iadd(self):
+         messages = self.s.device_messages(SIGFOX_DEVICE_ID)
+         if len(messages) == 100:
+             assert self.s.next is not None
+             while self.s.next:
+                 messages += self.s.next()
+             assert len(messages) > 100
+             assert self.s.next is None
 
     def test_device_locations(self):
          locations = self.s.device_locations(SIGFOX_DEVICE_ID)
