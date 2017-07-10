@@ -33,6 +33,9 @@ SIGFOX_GROUP_ID = os.environ['SIGFOX_GROUP_ID']
 
 TIMESTAMP = time.strftime('%Y-%m-%d %H:%M:%S')
 
+SINCE = 1496239200
+BEFORE = SINCE  #int(time.time())
+
 
 @raises(sigfoxapi.SigfoxApiBadRequest)
 def test_sigfoxapi_autherror():
@@ -82,6 +85,10 @@ class TestSigfoxUsers(_TestSigfoxBase):
         assert len(users) == 1
         assert users[0]['timezone'] == 'Australia/Melbourne'
 
+    def test_user_list_limit(self):
+        users = self.s.user_list(SIGFOX_GROUP_ID, offset=0, limit=1)
+        assert len(users) == 1
+
 #    @raises(sigfoxapi.SigfoxApiError)
 #    def test_user_list_invalid_groupid(self):
 #        self.s.user_list('invalid')
@@ -108,6 +115,12 @@ class TestSigfoxGroups(_TestSigfoxBase):
         assert isinstance(groups, list)
         assert len(groups) == 0
 
+    def test_group_list_limit(self):
+        groups = self.s.group_list(limit=1)
+        assert len(groups) <= 1
+
+    def test_group_list_offset(self):
+        groups = self.s.group_list(offset=10)
 
 class TestSigfoxGroupsObject(_TestSigfoxBaseObject):
 
@@ -151,11 +164,35 @@ class TestSigfoxDevicetypes(_TestSigfoxBase):
          if len(errors) > 0:
              pass   # TODO
 
+    def test_devicetype_errors_limit(self):
+         self.s.devicetype_errors(SIGFOX_DEVICETYPE_ID, limit=1)
+
+    def test_devicetype_errors_offset(self):
+         self.s.devicetype_errors(SIGFOX_DEVICETYPE_ID, offset=1)
+
+    def test_devicetype_errors_before(self):
+         errors = self.s.devicetype_errors(SIGFOX_DEVICETYPE_ID, before=BEFORE)
+
+    def test_devicetype_errors_since(self):
+         self.s.devicetype_errors(SIGFOX_DEVICETYPE_ID, since=SINCE)
+
     def test_devicetype_warnings(self):
          warnings = self.s.devicetype_warnings(SIGFOX_DEVICETYPE_ID)
          assert isinstance(warnings, list)
          if len(warnings) > 0:
              pass   # TODO
+
+    def test_devicetype_warnings_limit(self):
+         self.s.devicetype_warnings(SIGFOX_DEVICETYPE_ID, limit=1)
+
+    def test_devicetype_warnings_offset(self):
+         self.s.devicetype_warnings(SIGFOX_DEVICETYPE_ID, offset=1)
+
+    def test_devicetype_warnings_before(self):
+         self.s.devicetype_warnings(SIGFOX_DEVICETYPE_ID, before=BEFORE)
+
+    def test_devicetype_warnings_since(self):
+         self.s.devicetype_warnings(SIGFOX_DEVICETYPE_ID, since=SINCE)
 
     def test_devicetype_messages(self):
          messages = self.s.devicetype_messages(SIGFOX_DEVICETYPE_ID)
@@ -167,6 +204,18 @@ class TestSigfoxDevicetypes(_TestSigfoxBase):
                  assert isinstance(message['linkQuality'], str)
                  assert isinstance(message['snr'], str)
                  assert isinstance(message['time'], int)
+
+    def test_devicetype_messages_limit(self):
+         self.s.devicetype_messages(SIGFOX_DEVICETYPE_ID, limit=1)
+
+    def test_devicetype_messages_offset(self):
+         self.s.devicetype_messages(SIGFOX_DEVICETYPE_ID, offset=1)
+
+    def test_devicetype_messages_before(self):
+         self.s.devicetype_messages(SIGFOX_DEVICETYPE_ID, before=BEFORE)
+
+    def test_devicetype_messages_since(self):
+         self.s.devicetype_messages(SIGFOX_DEVICETYPE_ID, since=SINCE)
 
 
 class TestSigfoxDevicetypesObject(_TestSigfoxBaseObject):
@@ -292,6 +341,19 @@ class TestSigfoxCallbacks(_TestSigfoxBase):
     def test_callback_errors_groupid(self):
         errors = self.s.callback_errors(groupId=SIGFOX_GROUP_ID)
 
+    def test_callback_errors_limit(self):
+        self.s.callback_errors(limit=1)
+
+    def test_callback_errors_offset(self):
+        self.s.callback_errors(offset=10)
+
+    def test_callback_errors_since(self):
+        self.s.callback_errors(since=SINCE)
+
+    @raises(sigfoxapi.SigfoxApiError)
+    def test_callback_errors_before(self):
+        self.s.callback_errors(before=BEFORE)
+
 
 class TestSigfoxCallbacksObject(_TestSigfoxBaseObject):
 
@@ -320,6 +382,15 @@ class TestSigfoxDevices(_TestSigfoxBase):
         found = [device for device in devices if device['id'] == SIGFOX_DEVICE_ID]
         assert len(found) == 1
         assert isinstance(found[0], dict)
+
+    def test_device_list_snr(self):
+        self.s.device_list(SIGFOX_DEVICETYPE_ID, snr=1)
+
+    def test_device_list_limit(self):
+        self.s.device_list(SIGFOX_DEVICETYPE_ID, limit=1)
+
+    def test_device_list_offset(self):
+        self.s.device_list(SIGFOX_DEVICETYPE_ID, offset=10)
 
     def test_device_info(self):
         device = self.s.device_info(SIGFOX_DEVICE_ID)
@@ -352,7 +423,7 @@ class TestSigfoxDevices(_TestSigfoxBase):
 
     @raises(sigfoxapi.SigfoxApiBadRequest)
     def test_device_messages_before_invalid(self):
-         messages = self.s.device_messages(SIGFOX_DEVICE_ID, before=1493560800)
+         messages = self.s.device_messages(SIGFOX_DEVICE_ID, before=BEFORE)
          assert len(messages) == 0
 
     def test_device_messages_next_add(self):
@@ -380,13 +451,52 @@ class TestSigfoxDevices(_TestSigfoxBase):
              for location in locations:
                  assert isinstance(location['valid'], bool)
 
+    def test_device_locations_limit(self):
+         self.s.device_locations(SIGFOX_DEVICE_ID, limit=1)
+
+    def test_device_locations_offset(self):
+         self.s.device_locations(SIGFOX_DEVICE_ID, offset=10)
+
+    def test_device_locations_since(self):
+         self.s.device_locations(SIGFOX_DEVICE_ID, since=SINCE)
+
+    @raises(sigfoxapi.SigfoxApiError)
+    def test_device_locations_before(self):
+         self.s.device_locations(SIGFOX_DEVICE_ID, before=BEFORE)
+
     def test_device_warnings(self):
          warnings = self.s.device_warnings(SIGFOX_DEVICE_ID)
          assert isinstance(warnings, list)
 
+    def test_device_warnings_limit(self):
+         self.s.device_warnings(SIGFOX_DEVICE_ID, limit=1)
+
+    def test_device_warnings_offset(self):
+         self.s.device_warnings(SIGFOX_DEVICE_ID, offset=10)
+
+    def test_device_warnings_since(self):
+         self.s.device_warnings(SIGFOX_DEVICE_ID, since=SINCE)
+
+    @raises(sigfoxapi.SigfoxApiError)
+    def test_device_warnings_before(self):
+         self.s.device_warnings(SIGFOX_DEVICE_ID, before=BEFORE)
+
     def test_device_errors(self):
          errors = self.s.device_errors(SIGFOX_DEVICE_ID)
          assert isinstance(errors, list)
+
+    def test_device_errors_limit(self):
+         errors = self.s.device_errors(SIGFOX_DEVICE_ID, limit=1)
+
+    def test_device_errors_offset(self):
+         errors = self.s.device_errors(SIGFOX_DEVICE_ID, offset=10)
+
+    def test_device_errors_since(self):
+         errors = self.s.device_errors(SIGFOX_DEVICE_ID, since=SINCE)
+
+    @raises(sigfoxapi.SigfoxApiError)
+    def test_device_errors_before(self):
+         errors = self.s.device_errors(SIGFOX_DEVICE_ID, before=BEFORE)
 
     def test_device_networkstate(self):
         networkstate = self.s.device_networkstate(SIGFOX_DEVICE_ID)

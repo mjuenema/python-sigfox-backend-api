@@ -67,7 +67,7 @@ class SigfoxApiBadRequest(SigfoxApiError):
        .. important:: This exception will also be raised if the `before` or
            `since` arguments to some methods are set in a way that
            no results would be returned. For example I didn't send
-           any messages before 01-May-2017 so searching for any 
+           any messages before 01-May-2017 so searching for any
            will raise `SigfoxApiBadRequest` instead of returning
            an empty list!
 
@@ -290,10 +290,12 @@ class Sigfox(object):
         return self.request('GET', '/groups/' + groupid)
 
 
-    def group_list(self):
+    def group_list(self, **kwargs):
         """Lists all children groups of your group.
 
 
+           :param \**kwargs: Optional keyword arguments as described in the official
+               documentation (`limit`, `offset`, `parentId`).
 
            >>> s.group_list()
            [
@@ -314,7 +316,7 @@ class Sigfox(object):
 
         """
 
-        return self.request('GET', '/groups')
+        return self.request('GET', '/groups', params=kwargs)
 
 
     def devicetype_info(self,  devicetypeid):
@@ -389,10 +391,12 @@ class Sigfox(object):
         return self.request('GET', '/devicetypes')
 
 
-    def devicetype_errors(self, devicetypeid):
+    def devicetype_errors(self, devicetypeid, **kwargs):
         """Get the communication down events for devices belonging to a device type.
 
            :param devicetypeid: The device type identifier.
+           :param \**kwargs: Optional keyword arguments as described in the official
+               documentation (`limit`, `offset`, `since` and `before`)
 
            >>> s.devicetype_errors('5256c4d6c9a871b80f5a2e50')
            [
@@ -420,29 +424,35 @@ class Sigfox(object):
 
         """
 
-        return self.request('GET', '/devicetypes/%s/status/error' % (devicetypeid))
+        return self.request('GET', '/devicetypes/%s/status/error' % (devicetypeid),
+                            params=kwargs)
 
 
-    def devicetype_warnings(self, devicetypeid):
+    def devicetype_warnings(self, devicetypeid, **kwargs):
         """Get the network issues events that were sent for devices
            belonging to a device type.
 
            :param devicetypeid: The device type identifier.
+           :param \**kwargs: Optional keyword arguments as described in the official
+               documentation (`limit`, `offset`, `since` and `before`)
 
            See `Sigfox.devicetype_errors()` for example output.
 
         """
 
-        return self.request('GET', '/devicetypes/%s/status/warn' % (devicetypeid))
+        return self.request('GET', '/devicetypes/%s/status/warn' % (devicetypeid),
+                            params=kwargs)
 
 
 #    def devicetype_gelocsconfig(self, groupid):
 #        return self.request('GET', '/devicetypes/geolocs-config', params=groupid)
 
-    def devicetype_messages(self, devicetypeid):
+    def devicetype_messages(self, devicetypeid, **kwargs):
         """Get the messages that were sent by all the devices of a device type.
 
            :param devicetypeid: The device type identifier.
+           :param \**kwargs: Optional keyword arguments as described in the official
+               documentation (`limit`, `offset`, `since` and `before`)
 
            >>> s.devicetype_messages('5256c4d6c9a871b80f5a2e50')
            [
@@ -469,7 +479,8 @@ class Sigfox(object):
 
         """
 
-        return self.request('GET', '/devicetypes/%s/messages' % (devicetypeid))
+        return self.request('GET', '/devicetypes/%s/messages' % (devicetypeid),
+                            params=kwargs)
 
 
     def devicetype_disengage(self, devicetypeid):
@@ -621,8 +632,6 @@ class Sigfox(object):
                documentation (`limit`, `offset`, `since`, `before`, `hexId`,
                `deviceTypeId`, `groupId`).
 
-           .. bug:: Does not work. I always get a ``400 - Bad Request`` error.
-
         """
 
         return self.request('GET', '/callbacks/messages/error', params=kwargs)
@@ -755,7 +764,7 @@ class Sigfox(object):
 
         return self.request('GET', '/devices/%s/messages' % (deviceid), params=kwargs)
 
-    def device_locations(self, deviceid, **params):
+    def device_locations(self, deviceid, **kwargs):
         """Get the messages location.
 
            :param deviceid: The device identifier.
@@ -776,7 +785,7 @@ class Sigfox(object):
 
         """
 
-        return self.request('GET', '/devices/%s/locations' % (deviceid), params=params)
+        return self.request('GET', '/devices/%s/locations' % (deviceid), params=kwargs)
 
     def device_errors(self, deviceid, **kwargs):
         """Get the communication down events for a device.
