@@ -18,7 +18,7 @@ import drest.serialization
 import sigfoxapi.requesthandler
 
 __author__ = 'Markus Juenemann <markus@juenemann.net>'
-__version__ = '0.2.0'
+__version__ = '0.3.0'
 __license__ = 'BSD 2-clause "Simplified" License'
 
 SIGFOX_API_URL = 'https://backend.sigfox.com/api/'
