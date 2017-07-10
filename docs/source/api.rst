@@ -12,6 +12,16 @@ The sigfoxapi module
 
 .. autodata:: sigfoxapi.DEBUG
 .. autodata:: sigfoxapi.IGNORE_SSL_VALIDATION
+.. autodata:: sigfoxapi.RETURN_OBJECTS
+
+Exceptions
+----------
+
+.. autoclass:: sigfoxapi.SigfoxApiError
+.. autoclass:: sigfoxapi.SigfoxApiAuthError
+.. autoclass:: sigfoxapi.SigfoxApiAccessDenied
+.. autoclass:: sigfoxapi.SigfoxApiNotFound
+.. autoclass:: sigfoxapi.SigfoxApiServerError
 
 The Sigfox class
 ----------------

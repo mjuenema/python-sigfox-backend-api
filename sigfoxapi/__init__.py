@@ -8,12 +8,17 @@ Inspired by https://pypi.python.org/pypi/pySigfox.
 """
 
 import copy
+import urllib.parse
+import functools
+
 import drest
 import drest.exc
 import drest.serialization
 
+import sigfoxapi.requesthandler
+
 __author__ = 'Markus Juenemann <markus@juenemann.net>'
-__version__ = '0.2.0'
+__version__ = '0.3.0'
 __license__ = 'BSD 2-clause "Simplified" License'
 
 SIGFOX_API_URL = 'https://backend.sigfox.com/api/'
@@ -41,14 +46,72 @@ RETURN_OBJECTS = False
 
 
 class SigfoxApiError(Exception):
-    """Wrapper exception for all `drest` exceptions."""
+    """Base exception for all errors.
+
+       >>> try:
+       ...     s.group_info('does_not_exist')
+       ... except SigfoxApiNotFound:
+       ...     print('Not found')
+       ... except SigfoxApiError:
+       ...     print('Other Sigfox error')
+
+    """
+
     pass
 
 
-class _object(object):
+class SigfoxApiBadRequest(SigfoxApiError):
+    """Exception for HTTP error 400 (Bad Request).
+
+
+       .. important:: This exception will also be raised if the `before` or
+           `since` arguments to some methods are set in a way that
+           no results would be returned. For example I didn't send
+           any messages before 01-May-2017 so searching for any
+           will raise `SigfoxApiBadRequest` instead of returning
+           an empty list!
+
+           >>> t = 1493560800    # Unix timestamp 01-May-2017 00:00:00
+           >>> try:
+           ...     s.device_messages(SIGFOX_DEVICE_ID, before=t)
+           ... except SigfoxApiBadRequest:
+           ...     print("No Sigfox messages found before 01-May-2017")
+
+    """
+    pass
+
+
+class SigfoxApiAuthError(SigfoxApiError):
+    """Exception for HTTP error 401 (Authentication Error)."""
+    pass
+
+
+class SigfoxApiAccessDenied(SigfoxApiError):
+    """Exception for HTTP error 403 (Access Denied)."""
+    pass
+
+
+class SigfoxApiServerError(SigfoxApiError):
+    """Exception for HTTP error 500 (Internal Server Error)."""
+    pass
+
+
+class SigfoxApiNotFound(SigfoxApiError):
+    """Exception for HTTP error 404 (Not Found).
+
+       >>> try:
+       ...     s.group_info('123456789012345678901234')
+       ... except SigfoxApiNotFound:
+       ...     print('Not found')
+
+    """
+    pass
+
+
+class Object(object):
     """Convert a dictionary to an object.
 
-       `_object` is used internally to implement the
+       `Object` is used internally to implement the
        ``sigfoxapi.RETURN_OBJECTS=True`` functionality.
 
        All attributes are read-only.
@@ -64,9 +127,9 @@ class _object(object):
     def __getattr__(self, name):
         try:
             if isinstance(self._data[name], dict):
-                return _object(self._data[name])
+                return Object(self._data[name])
             elif isinstance(self._data[name], list):
-                return _object(self._data[name])
+                return Object(self._data[name])
             else:
                 return self._data[name]
         except KeyError:
@@ -75,15 +138,22 @@ class _object(object):
     def __getitem__(self,  key):
         value = self._data[key]
         if isinstance(value, dict):
-            return _object(value)
+            return Object(value)
         elif isinstance(value, list):
-            return _object(value)
+            return Object(value)
         else:
             return value
 
     def __len__(self):
         return len(self._data)
 
+    def __add__(self, other):
+        """Implement ``sigfoxapi.Object + sigfoxapi.Object``."""
+        return Object(self._data + other._data)
+
+    def __iadd__(self, other):
+        self._data += other._data
+        return self
 
 class Sigfox(object):
     """Interact with the Sigfox backend API.
@@ -100,13 +170,43 @@ class Sigfox(object):
 
     """
 
+    def next(self, *args, **kwargs):
+        """Fetch the next page of results for some methods.
+
+           Call this method whenever another method has returned only
+           a subset of the results. 
+
+           >>> messages = s.device_messages('4d3091a05ee16b3cc86699ab')
+           >>> while s.next:
+           ...     messages += s.next()
+           >>> len(messages)
+           310
+           >>> devices = s.device_list('4d3091a05ee16b3cc86699ab')
+           >>> while s.next:
+           ...     devices += s.next()
+           >>> len(devices)
+           22
+
+           .. warning:: Be mindful that this may return a huge number of
+                        results if used exactly as in the example above.
+
+        """
+
+        # `Sigfox.next()` will be set in `Sigfox.request()` to ``None`` or
+        # a `functool.partial(...)` method matching the original method.
+        # The code here is only for documentation purposes.
+        pass
+
+
     def __init__(self, login, password):
         self.api = drest.API(SIGFOX_API_URL, debug=DEBUG,
                              serialization_handler=drest.serialization.JsonSerializationHandler,
                              serialize=True,
                              deserialize=True,
                              ignore_ssl_validation=IGNORE_SSL_VALIDATION,
-                             trailing_slash=False)
+                             trailing_slash=False,
+                             request_handler = sigfoxapi.requesthandler.RequestHandler
+                             )
         self.api.auth(login, password)
 
 
@@ -125,15 +225,41 @@ class Sigfox(object):
         try:
             resp = self.api.make_request(method, path, params=params, headers=headers)
         except (drest.exc.dRestRequestError) as e:
-            raise SigfoxApiError(str(e))
+            if e.response.status == 400:
+                raise SigfoxApiBadRequest(str(e))
+            elif e.response.status == 401:
+                raise SigfoxApiAuthError(str(e))
+            elif e.response.status == 403:
+                raise SigfoxApiAccessDenied(str(e))
+            elif e.response.status == 404:
+                raise SigfoxApiNotFound(str(e))
+            elif e.response.status == 500:
+                raise SigfoxApiServerError(str(e))
+            else:
+                raise SigfoxApiError(str(e))
 
         try:
             data = resp.data['data']
         except (KeyError, TypeError):
             data = resp.data
 
+        # Set Sigfox.next()`by extracting the parameters from the 'next' URL and
+        # currying the self.request().
+        try:
+            next_params = dict(urllib.parse.parse_qsl(resp.data['paging']['next'].split('?')[1]))
+            if next_params:
+                try:
+                    params.update(next_params)
+                except AttributeError:
+                    params = next_params
+                self.next = functools.partial(self.request,method, path, params, headers)
+            else:
+                self.next = None
+        except (KeyError, TypeError):
+            self.next = None
+
         if RETURN_OBJECTS:  # and isinstance(data, dict):
-            return _object(data)
+            return Object(data)
         else:
             return data
 
@@ -164,10 +290,12 @@ class Sigfox(object):
         return self.request('GET', '/groups/' + groupid)
 
 
-    def group_list(self):
+    def group_list(self, **kwargs):
         """Lists all children groups of your group.
 
 
+           :param \**kwargs: Optional keyword arguments as described in the official
+               documentation (`limit`, `offset`, `parentId`).
 
            >>> s.group_list()
            [
@@ -188,7 +316,7 @@ class Sigfox(object):
 
         """
 
-        return self.request('GET', '/groups')
+        return self.request('GET', '/groups', params=kwargs)
 
 
     def devicetype_info(self,  devicetypeid):
@@ -263,10 +391,12 @@ class Sigfox(object):
         return self.request('GET', '/devicetypes')
 
 
-    def devicetype_errors(self, devicetypeid):
+    def devicetype_errors(self, devicetypeid, **kwargs):
         """Get the communication down events for devices belonging to a device type.
 
            :param devicetypeid: The device type identifier.
+           :param \**kwargs: Optional keyword arguments as described in the official
+               documentation (`limit`, `offset`, `since` and `before`)
 
            >>> s.devicetype_errors('5256c4d6c9a871b80f5a2e50')
            [
@@ -294,29 +424,35 @@ class Sigfox(object):
 
         """
 
-        return self.request('GET', '/devicetypes/%s/status/error' % (devicetypeid))
+        return self.request('GET', '/devicetypes/%s/status/error' % (devicetypeid),
+                            params=kwargs)
 
 
-    def devicetype_warnings(self, devicetypeid):
+    def devicetype_warnings(self, devicetypeid, **kwargs):
         """Get the network issues events that were sent for devices
            belonging to a device type.
 
            :param devicetypeid: The device type identifier.
+           :param \**kwargs: Optional keyword arguments as described in the official
+               documentation (`limit`, `offset`, `since` and `before`)
 
            See `Sigfox.devicetype_errors()` for example output.
 
         """
 
-        return self.request('GET', '/devicetypes/%s/status/warn' % (devicetypeid))
+        return self.request('GET', '/devicetypes/%s/status/warn' % (devicetypeid),
+                            params=kwargs)
 
 
 #    def devicetype_gelocsconfig(self, groupid):
 #        return self.request('GET', '/devicetypes/geolocs-config', params=groupid)
 
-    def devicetype_messages(self, devicetypeid):
+    def devicetype_messages(self, devicetypeid, **kwargs):
         """Get the messages that were sent by all the devices of a device type.
 
            :param devicetypeid: The device type identifier.
+           :param \**kwargs: Optional keyword arguments as described in the official
+               documentation (`limit`, `offset`, `since` and `before`)
 
            >>> s.devicetype_messages('5256c4d6c9a871b80f5a2e50')
            [
@@ -343,7 +479,8 @@ class Sigfox(object):
 
         """
 
-        return self.request('GET', '/devicetypes/%s/messages' % (devicetypeid))
+        return self.request('GET', '/devicetypes/%s/messages' % (devicetypeid),
+                            params=kwargs)
 
 
     def devicetype_disengage(self, devicetypeid):
@@ -495,8 +632,6 @@ class Sigfox(object):
                documentation (`limit`, `offset`, `since`, `before`, `hexId`,
                `deviceTypeId`, `groupId`).
 
-           .. bug:: Does not work. I always get a ``400 - Bad Request`` error.
-
         """
 
         return self.request('GET', '/callbacks/messages/error', params=kwargs)
@@ -629,7 +764,7 @@ class Sigfox(object):
 
         return self.request('GET', '/devices/%s/messages' % (deviceid), params=kwargs)
 
-    def device_locations(self, deviceid, **params):
+    def device_locations(self, deviceid, **kwargs):
         """Get the messages location.
 
            :param deviceid: The device identifier.
@@ -650,7 +785,7 @@ class Sigfox(object):
 
         """
 
-        return self.request('GET', '/devices/%s/locations' % (deviceid), params=params)
+        return self.request('GET', '/devices/%s/locations' % (deviceid), params=kwargs)
 
     def device_errors(self, deviceid, **kwargs):
         """Get the communication down events for a device.
