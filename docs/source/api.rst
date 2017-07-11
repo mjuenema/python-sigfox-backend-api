@@ -18,6 +18,7 @@ Exceptions
 ----------
 
 .. autoclass:: sigfoxapi.SigfoxApiError
+.. autoclass:: sigfoxapi.SigfoxApiBadRequest
 .. autoclass:: sigfoxapi.SigfoxApiAuthError
 .. autoclass:: sigfoxapi.SigfoxApiAccessDenied
 .. autoclass:: sigfoxapi.SigfoxApiNotFound
