@@ -19,7 +19,7 @@ nose-cov==1.6
 pkginfo==1.4.1
 Pygments==2.2.0
 pytz==2017.2
-requests==2.18.1
+requests==2.31.0
 requests-toolbelt==0.8.0
 restructuredtext-lint==1.0.1
 six==1.10.0
