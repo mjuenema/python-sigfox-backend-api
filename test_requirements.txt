@@ -1,7 +1,7 @@
 alabaster==0.7.10
 astkit==0.5.4
 Babel==2.4.0
-certifi==2022.12.7
+certifi==2023.7.22
 chardet==3.0.4
 cov-core==1.15.0
 coverage==4.4.1
